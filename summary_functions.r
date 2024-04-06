@@ -1,7 +1,8 @@
 get_selection <-
-  function(.election = "ALL",
-           .country = "ALL",
+  function(.country = "ALL",
+           .state = "ALL",
            .year = "ALL",
+           .election = "ALL",
            .office = "ALL",
            .district = "ALL",
            .gender = "ALL") {
@@ -15,32 +16,36 @@ get_selection <-
         x <- filter(election_results, Election == .election)
       }
     }
-    
+
     if (.country != "ALL") {
       x <- filter(x, Country == .country)
     }
     if (.year != "ALL") {
       x <- filter(x, Year == .year)
     }
-    
+
+    if (.state != "ALL") {
+      x <- filter(x, State == .state)
+    }
+
     if (.office != "ALL") {
       x <- filter(x, Office == .office)
     }
-    
+
     if (.district != "ALL") {
       x <- filter(x, District == .district)
     }
-    
+
     y <-
       left_join(x,
                 candidate_gender)
-    
+
     if (.gender != "ALL") {
       x <- filter(y, Gender == .gender)
     } else {
       x <- y
     }
-    
+
     if (is.grouped_df(x)) {
       x <- ungroup(x)
     } else
@@ -56,8 +61,10 @@ get_elected <- function() {
 #-----------------------------------------------------------------------
 #
 #-----------------------------------------------------------------------
-get_gender_count <- function(.election, .gender, .office) {
+get_gender_count <- function(.year, .state, .election, .gender, .office) {
   (get_selection(
+    .year = .year,
+    .state = .state,
     .election = .election,
     .gender = .gender,
     .office = .office
@@ -84,7 +91,7 @@ add_gender_rows <- function(.data, .cat, .m, .f, .o, .u) {
     Gender = "Women",
     Seats = .f
   )
-  
+
   .data <- add_row(
     .data,
     Category = .cat,
@@ -97,7 +104,7 @@ add_gender_rows <- function(.data, .cat, .m, .f, .o, .u) {
     Gender = "Other",
     Seats = .o
   )
-  
+
   .data <- add_row(
     .data,
     Category = .cat,
@@ -109,40 +116,40 @@ add_gender_rows <- function(.data, .cat, .m, .f, .o, .u) {
 #-----------------------------------------------------------------------
 #
 #-----------------------------------------------------------------------
-summarize_gender <- function(.office) {
+summarize_gender <- function(.year, .state, .office) {
   gender_summary <- tribble( ~ Category, ~ Gender, ~ Seats)
-  
+
   election <- "Primary"
-  m <- get_gender_count(election, "M", .office)
-  f <- get_gender_count(election, "F", .office)
-  o <- get_gender_count(election, "O", .office)
-  u <- get_gender_count(election, "ALL", .office) - (m + f + o)
-  
+  m <- get_gender_count(.year, .state, election, "M", .office)
+  f <- get_gender_count(.year, .state, election, "F", .office)
+  o <- get_gender_count(.year, .state, election, "O", .office)
+  u <- get_gender_count(.year, .state, election, "ALL", .office) - (m + f + o)
+
   gender_summary <- add_gender_rows(gender_summary, election, m, f, o, u)
-  
+
   election <- "General"
-  m <- get_gender_count(election, "M", .office)
-  f <- get_gender_count(election, "F", .office)
-  o <- get_gender_count(election, "O", .office)
-  u <- get_gender_count(election, "ALL", .office) - (m + f + o)
-  
+  m <- get_gender_count(.year, .state, election, "M", .office)
+  f <- get_gender_count(.year, .state, election, "F", .office)
+  o <- get_gender_count(.year, .state, election, "O", .office)
+  u <- get_gender_count(.year, .state, election, "ALL", .office) - (m + f + o)
+
   gender_summary <- add_gender_rows(gender_summary, election, m, f, o, u)
-  
+
   election <- "Elected"
-  m <- get_gender_count(election, "M", .office)
-  f <- get_gender_count(election, "F", .office)
-  o <- get_gender_count(election, "O", .office)
-  u <- get_gender_count(election, "ALL", .office) - (m + f + o)
-  
+  m <- get_gender_count(.year, .state, election, "M", .office)
+  f <- get_gender_count(.year, .state, election, "F", .office)
+  o <- get_gender_count(.year, .state, election, "O", .office)
+  u <- get_gender_count(.year, .state, election, "ALL", .office) - (m + f + o)
+
   gender_summary <- add_gender_rows(gender_summary, election, m, f, o, u)
-  
+
   gender_levels <- c("Unknown", "Other", "Women", "Men")
   gender_summary$Gender <-
     factor(gender_summary$Gender, levels = gender_levels)
-  
+
   #|>
   # group_by(Gender) |> mutate(label_y = cumsum(Seats) - 0.5 * Seats)
-  
+
   gender_summary
 }
 

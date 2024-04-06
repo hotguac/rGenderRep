@@ -11,7 +11,7 @@ election_results <- add_row(
   State = "IN",
   Year = 2022,
   Election = "Primary",
-  Sourced = read_csv("LWV/in_primary_2022.csv")
+  Sourced = read_csv("data/in_primary_2022.csv")
 )
 
 election_results <- add_row(
@@ -20,8 +20,30 @@ election_results <- add_row(
   State = "IN",
   Year = 2022,
   Election = "General",
-  Sourced = read_csv("LWV/in_general_2022.csv")
+  Sourced = read_csv("data/in_general_2022.csv")
 )
+
+
+election_results <- add_row(
+  election_results,
+  Country = "USA",
+  State = "IN",
+  Year = 2020,
+  Election = "Primary",
+  Sourced = read_csv("data/in_primary_2020.csv")
+)
+
+election_results <- add_row(
+  election_results,
+  Country = "USA",
+  State = "IN",
+  Year = 2020,
+  Election = "General",
+  Sourced = read_csv("data/in_general_2020.csv")
+)
+
+
+# bind_rows() use to add one tibble to the end of another
 
 election_results <-
   unnest(election_results,
@@ -39,7 +61,7 @@ candidate_gender <- add_row(
   Country = "USA",
   State = "IN",
   Year = 2022,
-  Sourced = read_csv("LWV/need_gender.csv",   col_types = cols(Gender = col_factor(gender_levels))
+  Sourced = read_csv("data/need_gender.csv",   col_types = cols(Gender = col_factor(gender_levels))
 )  |>
     mutate(District = if_else(District == "1", "01", District)) |>
     mutate(District = if_else(District == "2", "02", District)) |>
