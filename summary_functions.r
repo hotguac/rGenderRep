@@ -38,9 +38,11 @@ get_selection <-
 
     y <-
       left_join(x,
-                candidate_gender)
+                candidate_gender,
+                by = join_by(Country, State, Year, Candidate, Office, Party, District))
 
     if (.gender != "ALL") {
+      #print(y)
       x <- filter(y, Gender == .gender)
     } else {
       x <- y
@@ -53,64 +55,69 @@ get_selection <-
   }
 
 get_elected <- function() {
-  get_selection(.election = "General") |>
+  t <- get_selection(.election = "General") |>
     group_by(Country, State, Year, District, Office) |>
     filter(Votes == max(Votes))
+  # remove the Gender column so it won't get duplicated later
+  t$Gender <- NULL
+  t
 }
 
 #-----------------------------------------------------------------------
 #
 #-----------------------------------------------------------------------
-get_gender_count <- function(.year, .state, .election, .gender, .office) {
-  (get_selection(
-    .year = .year,
-    .state = .state,
-    .election = .election,
-    .gender = .gender,
-    .office = .office
-  ) |> count())$n
-}
+get_gender_count <-
+  function(.year, .state, .election, .gender, .office) {
+    (
+      get_selection(
+        .year = .year,
+        .state = .state,
+        .election = .election,
+        .gender = .gender,
+        .office = .office
+      ) |> count()
+    )$n
+  }
 
 #-----------------------------------------------------------------------
-#
+#  write_csv(get_missing_gender(.election = "General", .office = "State Senator"),file = "data/missing1.csv", na = "")
 #-----------------------------------------------------------------------
-get_missing_gender <- function(.election, .office) {
-  get_selection(
-    .election = .election,
-    .office = .office
-  ) |> filter(is.na(Gender))
+get_missing_gender <- function(.election = "ALL", .office = "ALL") {
+  get_selection(.election = .election,
+                .office = .office) |> filter(is.na(Gender)) |> select(c(
+    Country,
+    State,
+    Year,
+    Gender,
+    Candidate,
+    Office,
+    Party,
+    District
+  ))
 }
 
 #-----------------------------------------------------------------------
 #
 #-----------------------------------------------------------------------
 add_gender_rows <- function(.data, .cat, .m, .f, .o, .u) {
-  .data <- add_row(
-    .data,
-    Category = .cat,
-    Gender = "Women",
-    Seats = .f
-  )
+  .data <- add_row(.data,
+                   Category = .cat,
+                   Gender = "Women",
+                   Seats = .f)
 
-  .data <- add_row(
-    .data,
-    Category = .cat,
-    Gender = "Men",
-    Seats = .m
-  )
-  .data <- add_row(
-    .data,
-    Category = .cat,
-    Gender = "Other",
-    Seats = .o
-  )
+  .data <- add_row(.data,
+                   Category = .cat,
+                   Gender = "Men",
+                   Seats = .m)
+  .data <- add_row(.data,
+                   Category = .cat,
+                   Gender = "Other",
+                   Seats = .o)
 
-  .data <- add_row(
-    .data,
-    Category = .cat,
-    Gender = "Unknown",
-    Seats = .u
-  )
+  .data <- add_row(.data,
+                   Category = .cat,
+                   Gender = "Unknown",
+                   Seats = .u)
 }
 
 #-----------------------------------------------------------------------
@@ -123,25 +130,31 @@ summarize_gender <- function(.year, .state, .office) {
   m <- get_gender_count(.year, .state, election, "M", .office)
   f <- get_gender_count(.year, .state, election, "F", .office)
   o <- get_gender_count(.year, .state, election, "O", .office)
-  u <- get_gender_count(.year, .state, election, "ALL", .office) - (m + f + o)
+  u <-
+    get_gender_count(.year, .state, election, "ALL", .office) - (m + f + o)
 
-  gender_summary <- add_gender_rows(gender_summary, election, m, f, o, u)
+  gender_summary <-
+    add_gender_rows(gender_summary, election, m, f, o, u)
 
   election <- "General"
   m <- get_gender_count(.year, .state, election, "M", .office)
   f <- get_gender_count(.year, .state, election, "F", .office)
   o <- get_gender_count(.year, .state, election, "O", .office)
-  u <- get_gender_count(.year, .state, election, "ALL", .office) - (m + f + o)
+  u <-
+    get_gender_count(.year, .state, election, "ALL", .office) - (m + f + o)
 
-  gender_summary <- add_gender_rows(gender_summary, election, m, f, o, u)
+  gender_summary <-
+    add_gender_rows(gender_summary, election, m, f, o, u)
 
   election <- "Elected"
   m <- get_gender_count(.year, .state, election, "M", .office)
   f <- get_gender_count(.year, .state, election, "F", .office)
   o <- get_gender_count(.year, .state, election, "O", .office)
-  u <- get_gender_count(.year, .state, election, "ALL", .office) - (m + f + o)
+  u <-
+    get_gender_count(.year, .state, election, "ALL", .office) - (m + f + o)
 
-  gender_summary <- add_gender_rows(gender_summary, election, m, f, o, u)
+  gender_summary <-
+    add_gender_rows(gender_summary, election, m, f, o, u)
 
   gender_levels <- c("Unknown", "Other", "Women", "Men")
   gender_summary$Gender <-
@@ -152,5 +165,3 @@ summarize_gender <- function(.year, .state, .office) {
 
   gender_summary
 }
-
-

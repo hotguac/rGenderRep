@@ -2,6 +2,7 @@ library(tidyverse)
 
 # data source is
 # https://indianavoters.in.gov/ENRHistorical/ElectionResults?year=2022#
+
 election_results <-
   tribble(~ Country, ~ State, ~ Year, ~ Election, ~ Sourced)
 
@@ -11,7 +12,7 @@ election_results <- add_row(
   State = "IN",
   Year = 2022,
   Election = "Primary",
-  Sourced = read_csv("data/in_primary_2022.csv")
+  Sourced = read_csv("data/in_primary_2022.csv", show_col_types = FALSE)
 )
 
 election_results <- add_row(
@@ -20,7 +21,7 @@ election_results <- add_row(
   State = "IN",
   Year = 2022,
   Election = "General",
-  Sourced = read_csv("data/in_general_2022.csv")
+  Sourced = read_csv("data/in_general_2022.csv", show_col_types = FALSE)
 )
 
 
@@ -30,7 +31,7 @@ election_results <- add_row(
   State = "IN",
   Year = 2020,
   Election = "Primary",
-  Sourced = read_csv("data/in_primary_2020.csv")
+  Sourced = read_csv("data/in_primary_2020.csv", show_col_types = FALSE)
 )
 
 election_results <- add_row(
@@ -39,7 +40,7 @@ election_results <- add_row(
   State = "IN",
   Year = 2020,
   Election = "General",
-  Sourced = read_csv("data/in_general_2020.csv")
+  Sourced = read_csv("data/in_general_2020.csv", show_col_types = FALSE)
 )
 
 
@@ -80,4 +81,42 @@ candidate_gender <-
          keep_empty = TRUE)
 
 
+test_files <- function() {
+  x <- list.files("data", pattern = "in_general.*\\.csv")
+
+  print(x)
+  print("--------")
+
+  for (q in 1:length(x)) {
+    y <- strsplit(x[q], "_")
+
+    state <- y[[1]][1]
+    election <- y[[1]][2]
+    z <- strsplit(y[[1]][3], "\\.")
+    year <- z[[1]][1]
+
+    print(paste("State = ", state))
+    print(paste("Election = ", election))
+    print(paste("Year = ", year))
+    print("--------")
+
+  }
+}
+
+load_indiana <- function(year, election) {
+  result = tryCatch({
+    Sourced = read_csv(paste("data/in_", election, "_", year, ".csv", sep = ""), show_col_types = FALSE)
+    print("Loaded")
+    Sourced
+  }, warning = function(w) {
+    print(w)
+  }, error = function(e) {
+    print(e)
+  }, finally = {
+    print("finally")
+  })
+
+}
 #
+
+
