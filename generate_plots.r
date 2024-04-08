@@ -3,9 +3,10 @@ library(ggplot2)
 library(svglite)
 
 
-#-----------------------------------------------------------------------
-#
-#-----------------------------------------------------------------------
+#-------------------------------------------------------------------------
+# Generate a stacked bar chart showing percentage of candidates by gender
+# for the primary, general, and elected to office
+#-------------------------------------------------------------------------
 generate_plot <- function(.year, .state, .office) {
   gender_summary <- summarize_gender(.year = .year, .state = .state, .office = .office)
 
