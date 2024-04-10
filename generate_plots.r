@@ -8,10 +8,17 @@ library(svglite)
 # for the primary, general, and elected to office
 #-------------------------------------------------------------------------
 generate_plot <- function(.year, .state, .office) {
-  gender_summary <- summarize_gender(.year = .year, .state = .state, .office = .office)
+  gender_summary <-
+    summarize_gender(.year = .year,
+                     .state = .state,
+                     .office = .office)
+
+  summary_filename = paste(.year, "_", .state, "_", .office, ".csv")
+  summary_filename <- gsub(" ", "_", summary_filename)
+  summary_filename <- gsub("/", "_", summary_filename)
 
   write_excel_csv(gender_summary,
-                  file = paste("output/gender_Summary_", .office, ".csv"))
+                  file = paste("output/gender_Summary_", summary_filename))
 
   # with values on bars
   new_data <- gender_summary |>
