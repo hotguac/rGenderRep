@@ -21,12 +21,14 @@ generate_plot <- function(.year, .state, .office) {
                   file = paste("output/gender_Summary_", summary_filename))
 
   # with values on bars
+  options(dplyr.summarise.inform = FALSE)
   new_data <- gender_summary |>
     filter(Seats > 0) |>
     mutate(Category = factor(Category)) |>
     group_by(Category, Gender) |>
     summarise(n = sum(Seats, na.rm = TRUE)) |>
     mutate(pct = prop.table(n))
+  options(dplyr.summarise.inform = TRUE)
 
   new_data |>
     ggplot(aes(Category, pct, fill = Gender)) +
