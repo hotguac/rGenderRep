@@ -2,7 +2,9 @@
 #
 #------------------------------------------------------------------------
 get_selection <-
-  function(.country = "ALL",
+  function(.data,
+           .meta_data,
+           .country = "ALL",
            .state = "ALL",
            .year = "ALL",
            .election = "ALL",
@@ -11,12 +13,12 @@ get_selection <-
            .gender = "ALL") {
     #
     if (.election == "ALL") {
-      x <- election_results
+      x <- .data
     } else {
       if (.election == "Elected") {
-        x <- get_elected()
+        x <- get_elected(.data, .meta_data)
       } else {
-        x <- filter(election_results, Election == .election)
+        x <- filter(.data, Election == .election)
       }
     }
 
@@ -42,7 +44,7 @@ get_selection <-
 
     y <-
       left_join(x,
-                candidate_gender,
+                .meta_data,
                 by = join_by(Country, State, Year, Candidate, Office, Party, District))
 
     if (.gender != "ALL") {
@@ -60,8 +62,8 @@ get_selection <-
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-get_elected <- function() {
-  t <- get_selection(.election = "general") |>
+get_elected <- function(.data, .meta_data) {
+  t <- get_selection(.data, .meta_data, .election = "general") |>
     group_by(Country, State, Year, District, Office) |>
     filter(Votes == max(Votes))
   # remove the Gender column so it won't get duplicated later
@@ -73,15 +75,12 @@ get_elected <- function() {
 #
 #-----------------------------------------------------------------------
 get_gender_count <-
-  function(.year, .state, .election, .gender, .office) {
+  function(.data, .gender) {
+    if (.gender == "ALL") {
+      (.data |> count())$n
+    }
     (
-      get_selection(
-        .year = .year,
-        .state = .state,
-        .election = .election,
-        .gender = .gender,
-        .office = .office
-      ) |> count()
+      .data |> filter(Gender == .gender) |> count()
     )$n
   }
 
@@ -131,35 +130,35 @@ add_gender_rows <- function(.data, .cat, .m, .f, .o, .u) {
 #-----------------------------------------------------------------------
 #
 #-----------------------------------------------------------------------
-summarize_gender <- function(.year, .state, .office) {
+summarize_gender <- function(.data, .year, .state, .office) {
   gender_summary <- tribble(~ Category, ~ Gender, ~ Seats)
 
   election <- "primary"
-  m <- get_gender_count(.year, .state, election, "M", .office)
-  f <- get_gender_count(.year, .state, election, "F", .office)
-  o <- get_gender_count(.year, .state, election, "O", .office)
+  m <- get_gender_count(.data, "M")
+  f <- get_gender_count(.data, "F")
+  o <- get_gender_count(.data, "O")
   u <-
-    get_gender_count(.year, .state, election, "ALL", .office) - (m + f + o)
+    get_gender_count(.data, "ALL") - (m + f + o)
 
   gender_summary <-
     add_gender_rows(gender_summary, election, m, f, o, u)
 
   election <- "general"
-  m <- get_gender_count(.year, .state, election, "M", .office)
-  f <- get_gender_count(.year, .state, election, "F", .office)
-  o <- get_gender_count(.year, .state, election, "O", .office)
+  m <- get_gender_count(.data, "M")
+  f <- get_gender_count(.data, "F")
+  o <- get_gender_count(.data, "O")
   u <-
-    get_gender_count(.year, .state, election, "ALL", .office) - (m + f + o)
+    get_gender_count(.data, "ALL") - (m + f + o)
 
   gender_summary <-
     add_gender_rows(gender_summary, election, m, f, o, u)
 
   election <- "Elected"
-  m <- get_gender_count(.year, .state, election, "M", .office)
-  f <- get_gender_count(.year, .state, election, "F", .office)
-  o <- get_gender_count(.year, .state, election, "O", .office)
+  m <- get_gender_count(.data, "M")
+  f <- get_gender_count(.data, "F")
+  o <- get_gender_count(.data, "O")
   u <-
-    get_gender_count(.year, .state, election, "ALL", .office) - (m + f + o)
+    get_gender_count(.data, "ALL") - (m + f + o)
 
   gender_summary <-
     add_gender_rows(gender_summary, election, m, f, o, u)

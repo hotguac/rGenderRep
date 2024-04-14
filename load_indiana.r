@@ -6,9 +6,10 @@ library(tidyverse)
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-load_gender <- function() {
+in_load_candidate_meta <- function(.data) {
   # primary data was exported and the gender (M/F) manually added
   # to the csv file
+
   gender_levels <- c("M", "F", "O")
 
   candidate_gender <-
@@ -35,17 +36,21 @@ load_gender <- function() {
     unnest(candidate_gender,
            cols = c(Sourced),
            keep_empty = TRUE)
+
+  .data <- bind_rows(.data, candidate_gender)
 }
 
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-test_files <- function() {
+in_load_elections <- function(election_results) {
   x1 <- list.files("data", pattern = "in_general.*\\.csv")
   x2 <- list.files("data", pattern = "in_primary.*\\.csv")
   x <- c(x1, x2)
 
   print("--------")
+
+  all_results <- NULL
 
   for (q in 1:length(x)) {
     y <- strsplit(x[q], "_")
@@ -54,41 +59,43 @@ test_files <- function() {
     election <- y[[1]][2]
     z <- strsplit(y[[1]][3], "\\.")
     year <- as.numeric(z[[1]][1])
+    file <- paste("data/", x[q], sep = "")
 
-    load_indiana(year, election)
+    results <- in_load_election_file(file, year, election)
+    if (is.null(all_results)) {
+      all_results <- results
+    } else {
+      all_results <- bind_rows(all_results, results)
+    }
+
   }
 
   print("--------")
 
-  election_results <<-
-    unnest(election_results,
+  results <-
+    unnest(all_results,
            cols = c(Sourced),
            keep_empty = TRUE)
 
-  candidate_gender <<- load_gender()
-
+  bind_rows(election_results, results)
 }
 
 #------------------------------------------------------------------------
-#
-#------------------------------------------------------------------------
-load_indiana <- function(year, election) {
+in_load_election_file <- function(filename, year, election) {
+  in_elections <-
+    tribble( ~ Country, ~ State, ~ Year, ~ Election, ~ Sourced)
+
   result = tryCatch({
     sourced  <-
-      read_csv(paste("data/in_", election, "_", year, ".csv", sep = ""),
+      read_csv(filename,
                show_col_types = FALSE)
     print(paste("Loaded IN ", year, election))
 
-    if (!exists("election_results")) {
-      election_results <<-
-        tribble( ~ Country, ~ State, ~ Year, ~ Election, ~ Sourced)
-    }
-
-    election_results <<- add_row(
-      election_results,
+    in_elections <- add_row(
+      in_elections,
       Country = "USA",
       State = "IN",
-      Year = year,
+      Year = as.integer(year),
       Election = election,
       Sourced = sourced
     )
@@ -98,7 +105,7 @@ load_indiana <- function(year, election) {
     print(e)
     sourced <- NULL
   }, finally = {
-    #print("finally")
+    in_elections
   })
 
 }
