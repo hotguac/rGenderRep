@@ -11,23 +11,23 @@ source(file = "sources.r")
 
 #------------------------------------------------------------------------
 init_elections <- function() {
-  tribble(~ Country,
-          ~ State,
-          ~ Year,
-          ~ Office,
-          ~ Party,
-          ~ District,
-          ~ Candidate,
-          ~ Votes) %>% mutate(
-            across(Country, as.character),
-            across(State, as.character),
-            across(Year, as.integer),
-            across(Office, as.character),
-            across(Party, as.character),
-            across(District, as.character),
-            across(Candidate, as.character),
-            across(Votes, as.double)
-          )
+  tribble( ~ Country,
+           ~ State,
+           ~ Year,
+           ~ Office,
+           ~ Party,
+           ~ District,
+           ~ Candidate,
+           ~ Votes) %>% mutate(
+             across(Country, as.character),
+             across(State, as.character),
+             across(Year, as.integer),
+             across(Office, as.character),
+             across(Party, as.character),
+             across(District, as.character),
+             across(Candidate, as.character),
+             across(Votes, as.double)
+           )
 
 }
 
@@ -35,16 +35,16 @@ init_elections <- function() {
 #------------------------------------------------------------------------
 init_meta <- function() {
   meta <-
-    tribble(~ Country,
-            ~ State,
-            ~ Year,
-            ~ Office,
-            ~ Party,
-            ~ District,
-            ~ Candidate,
-            ~ Gender,
-            ~ Race,
-            ~ Age)
+    tribble( ~ Country,
+             ~ State,
+             ~ Year,
+             ~ Office,
+             ~ Party,
+             ~ District,
+             ~ Candidate,
+             ~ Gender,
+             ~ Race,
+             ~ Age)
 
   meta <-
     meta %>% mutate(
@@ -80,7 +80,6 @@ main <- function() {
     all_offices <- unique(year_data$Office)
     for (office_year in 1:length(all_offices)) {
       target_office <- all_offices[office_year]
-      print(paste("Generating for office ", target_office))
 
       p <-
         generate_plot(all_rows,
@@ -101,6 +100,10 @@ main <- function() {
       )
     }
   }
+
+  write_csv(all_rows |> get_missing_gender(),
+            "~/LWV/output/missing_gender.csv",
+            na = "")
 
   gc()
 }

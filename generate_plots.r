@@ -8,8 +8,21 @@ library(svglite)
 # for the primary, general, and elected to office
 #-------------------------------------------------------------------------
 generate_plot <- function(.data, .year, .state, .office) {
-  gender_summary <-
-    summarize_gender(.data, .year, .state, .office)
+  print(paste(.year, .state, .office))
+  gender_summary <- tryCatch({
+    result <- summarize_gender(.data, .year, .state, .office)
+  }, warning = function(w) {
+    print("Inside warning block")
+    print(w)
+  }, error = function(e) {
+    print("Inside error block")
+    print(e)
+  }, finally = {
+    result
+  })
+
+  # gender_summary <-
+  #   summarize_gender(.data, .year, .state, .office)
 
   summary_filename = paste(.year, "_", .state, "_", .office, ".csv")
   summary_filename <- gsub(" ", "_", summary_filename)

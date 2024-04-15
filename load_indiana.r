@@ -13,7 +13,7 @@ in_load_candidate_meta <- function(.data) {
   gender_levels <- c("M", "F", "O")
 
   candidate_gender <-
-    tribble(~ Country, ~ State, ~ Year, ~ Sourced)
+    tribble( ~ Country, ~ State, ~ Year, ~ Sourced)
 
   candidate_gender <- add_row(
     candidate_gender,
@@ -83,7 +83,7 @@ in_load_elections <- function(election_results) {
 #------------------------------------------------------------------------
 in_load_election_file <- function(filename, year, election) {
   in_elections <-
-    tribble( ~ Country, ~ State, ~ Year, ~ Election, ~ Sourced)
+    tribble(~ Country, ~ State, ~ Year, ~ Election, ~ Sourced)
 
   result = tryCatch({
     sourced  <-
