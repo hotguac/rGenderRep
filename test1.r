@@ -28,9 +28,7 @@ init_elections <- function() {
              across(Candidate, as.character),
              across(Votes, as.double)
            )
-
 }
-
 
 #------------------------------------------------------------------------
 init_meta <- function() {
@@ -44,32 +42,39 @@ init_meta <- function() {
              ~ Candidate,
              ~ Gender,
              ~ Race,
-             ~ Age)
-
-  meta <-
-    meta %>% mutate(
-      across(Country, as.character),
-      across(State, as.character),
-      across(Year, as.integer),
-      across(Office, as.character),
-      across(Party, as.character),
-      across(District, as.character),
-      across(Candidate, as.character),
-      across(Gender, as.character),
-      across(Race, as.character),
-      across(Age, as.integer)
-    )
+             ~ Age) %>% mutate(
+               across(Country, as.character),
+               across(State, as.character),
+               across(Year, as.integer),
+               across(Office, as.character),
+               across(Party, as.character),
+               across(District, as.character),
+               across(Candidate, as.character),
+               across(Gender, as.character),
+               across(Race, as.character),
+               across(Age, as.integer)
+             )
 }
 
 #------------------------------------------------------------------------
 main <- function() {
-  election_results <- init_elections()
+  election_results <- init_elections() |> in_load_elections2() |>
+  #------------------------------------------------------------------------
+  # To speed up testing let's filter data a little
+  # Comment out when we're ready for all data (including pipe above)
+  filter((
+    Office == "US Senator" |
+      Office == "US Representative" |
+      Office == "State Senator" | Office == "State Representative"
+  )
+  )
+  #
+  # End test filter
+  #------------------------------------------------------------------------
 
   candidate_meta <- init_meta() |> in_load_candidate_meta()
 
-  election_results <- in_load_elections(election_results)
-
-  all_rows <- get_selection(election_results, candidate_meta)
+  all_rows <- combine_meta(election_results, candidate_meta)
   all_years <- unique(all_rows$Year)
 
   for (data_year in 1:length(all_years)) {
@@ -104,6 +109,4 @@ main <- function() {
   write_csv(all_rows |> get_missing_gender(),
             "~/LWV/output/missing_gender.csv",
             na = "")
-
-  gc()
 }

@@ -4,8 +4,6 @@ library(tidyverse)
 # https://indianavoters.in.gov/ENRHistorical/ElectionResults?year=2022#
 
 #------------------------------------------------------------------------
-#
-#------------------------------------------------------------------------
 in_load_candidate_meta <- function(.data) {
   # primary data was exported and the gender (M/F) manually added
   # to the csv file
@@ -13,7 +11,7 @@ in_load_candidate_meta <- function(.data) {
   gender_levels <- c("M", "F", "O")
 
   candidate_gender <-
-    tribble( ~ Country, ~ State, ~ Year, ~ Sourced)
+    tribble(~ Country, ~ State, ~ Year, ~ Sourced)
 
   candidate_gender <- add_row(
     candidate_gender,
@@ -37,76 +35,52 @@ in_load_candidate_meta <- function(.data) {
            cols = c(Sourced),
            keep_empty = TRUE)
 
-  .data <- bind_rows(.data, candidate_gender)
+  # .data <- bind_rows(.data, candidate_gender)
+  bind_rows(.data, candidate_gender)
 }
 
+
 #------------------------------------------------------------------------
-#
 #------------------------------------------------------------------------
-in_load_elections <- function(election_results) {
-  x1 <- list.files("data", pattern = "in_general.*\\.csv")
-  x2 <- list.files("data", pattern = "in_primary.*\\.csv")
-  x <- c(x1, x2)
-
-  print("--------")
-
-  all_results <- NULL
-
-  for (q in 1:length(x)) {
-    y <- strsplit(x[q], "_")
-
-    state <- y[[1]][1]
-    election <- y[[1]][2]
-    z <- strsplit(y[[1]][3], "\\.")
-    year <- as.numeric(z[[1]][1])
-    file <- paste("data/", x[q], sep = "")
-
-    results <- in_load_election_file(file, year, election)
-    if (is.null(all_results)) {
-      all_results <- results
-    } else {
-      all_results <- bind_rows(all_results, results)
-    }
-
+in_load_elections2 <- function(election_results) {
+  extract_election <- function(filename) {
+    temp <- strsplit(filename, "_")
+    temp[[1]][2]
   }
 
-  print("--------")
+  extract_state <- function(filename) {
+    temp <- strsplit(filename, "_")
+    toupper(temp[[1]][1])
+  }
+
+  extract_year <- function(filename) {
+    temp <- strsplit(filename, "_")
+    temp2 <- temp[[1]][3]
+    temp <- strsplit(temp2, "\\.")
+    temp2 <- temp[[1]][1]
+  }
+
+  x <-
+    list.files("data", pattern = "in_(general|primary).*\\.csv", full.names = TRUE) |> set_names(basename)
 
   results <-
-    unnest(all_results,
-           cols = c(Sourced),
-           keep_empty = TRUE)
+    x  |> map(\(x) read_csv(x)) |>
+    list_rbind(names_to = "filename") %>%
+    rowwise() %>%
+    mutate(Election = mapply(extract_election, filename)) %>%
+    mutate(State = mapply(extract_state, filename)) %>%
+    mutate(Year = mapply(extract_year, filename)) %>%
+    mutate(Country = "USA") %>% mutate(
+      across(Country, as.character),
+      across(State, as.character),
+      across(Year, as.integer),
+      across(Office, as.character),
+      across(Party, as.character),
+      across(District, as.character),
+      across(Candidate, as.character),
+      across(Votes, as.double)
+    )
 
+  results$filename <- NULL
   bind_rows(election_results, results)
 }
-
-#------------------------------------------------------------------------
-in_load_election_file <- function(filename, year, election) {
-  in_elections <-
-    tribble(~ Country, ~ State, ~ Year, ~ Election, ~ Sourced)
-
-  result = tryCatch({
-    sourced  <-
-      read_csv(filename,
-               show_col_types = FALSE)
-    print(paste("Loaded IN ", year, election))
-
-    in_elections <- add_row(
-      in_elections,
-      Country = "USA",
-      State = "IN",
-      Year = as.integer(year),
-      Election = election,
-      Sourced = sourced
-    )
-  }, warning = function(w) {
-    print(w)
-  }, error = function(e) {
-    print(e)
-    sourced <- NULL
-  }, finally = {
-    in_elections
-  })
-
-}
-#

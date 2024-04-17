@@ -21,10 +21,7 @@ generate_plot <- function(.data, .year, .state, .office) {
     result
   })
 
-  # gender_summary <-
-  #   summarize_gender(.data, .year, .state, .office)
-
-  summary_filename = paste(.year, "_", .state, "_", .office, ".csv")
+  summary_filename = paste(.year, "_", .state, "_", .office, ".csv", sep = "")
   summary_filename <- gsub(" ", "_", summary_filename)
   summary_filename <- gsub("/", "_", summary_filename)
 
@@ -52,5 +49,5 @@ generate_plot <- function(.data, .year, .state, .office) {
       plot.title = element_text(size = 16, hjust = 0.5)
     )  +
     scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-    labs(x = .office, y = "Percent", title = "2022 Indiana")
+    labs(x = "", y = "Percent", title = paste(.state, .year, .office))
 }
