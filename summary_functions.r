@@ -60,7 +60,7 @@ add_gender_rows <- function(.data, .cat, .m, .f, .o, .u) {
 
 #-----------------------------------------------------------------------
 summarize_gender <- function(.data, .year, .state, .office) {
-  gender_summary <- tribble( ~ Category, ~ Gender, ~ Seats)
+  gender_summary <- tribble(~ Category, ~ Gender, ~ Seats)
 
   #--
   election <- "primary"

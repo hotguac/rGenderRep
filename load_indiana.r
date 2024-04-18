@@ -11,7 +11,7 @@ in_load_candidate_meta <- function(.data) {
   gender_levels <- c("M", "F", "O")
 
   candidate_gender <-
-    tribble(~ Country, ~ State, ~ Year, ~ Sourced)
+    tribble( ~ Country, ~ State, ~ Year, ~ Sourced)
 
   candidate_gender <- add_row(
     candidate_gender,
@@ -63,6 +63,9 @@ in_load_elections2 <- function(election_results) {
   x <-
     list.files("data", pattern = "in_(general|primary).*\\.csv", full.names = TRUE) |> set_names(basename)
 
+  save_option <- getOption("readr.show_col_types")
+  options(readr.show_col_types = FALSE)
+
   results <-
     x  |> map(\(x) read_csv(x)) |>
     list_rbind(names_to = "filename") %>%
@@ -80,6 +83,8 @@ in_load_elections2 <- function(election_results) {
       across(Candidate, as.character),
       across(Votes, as.double)
     )
+
+  options(readr.show_col_types = save_option)
 
   results$filename <- NULL
   bind_rows(election_results, results)

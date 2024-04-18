@@ -11,55 +11,55 @@ source(file = "sources.r")
 
 #------------------------------------------------------------------------
 init_elections <- function() {
-  tribble( ~ Country,
-           ~ State,
-           ~ Year,
-           ~ Office,
-           ~ Party,
-           ~ District,
-           ~ Candidate,
-           ~ Votes) %>% mutate(
-             across(Country, as.character),
-             across(State, as.character),
-             across(Year, as.integer),
-             across(Office, as.character),
-             across(Party, as.character),
-             across(District, as.character),
-             across(Candidate, as.character),
-             across(Votes, as.double)
-           )
+  tribble(~ Country,
+          ~ State,
+          ~ Year,
+          ~ Office,
+          ~ Party,
+          ~ District,
+          ~ Candidate,
+          ~ Votes) %>% mutate(
+            across(Country, as.character),
+            across(State, as.character),
+            across(Year, as.integer),
+            across(Office, as.character),
+            across(Party, as.character),
+            across(District, as.character),
+            across(Candidate, as.character),
+            across(Votes, as.double)
+          )
 }
 
 #------------------------------------------------------------------------
 init_meta <- function() {
   meta <-
-    tribble( ~ Country,
-             ~ State,
-             ~ Year,
-             ~ Office,
-             ~ Party,
-             ~ District,
-             ~ Candidate,
-             ~ Gender,
-             ~ Race,
-             ~ Age) %>% mutate(
-               across(Country, as.character),
-               across(State, as.character),
-               across(Year, as.integer),
-               across(Office, as.character),
-               across(Party, as.character),
-               across(District, as.character),
-               across(Candidate, as.character),
-               across(Gender, as.character),
-               across(Race, as.character),
-               across(Age, as.integer)
-             )
+    tribble(~ Country,
+            ~ State,
+            ~ Year,
+            ~ Office,
+            ~ Party,
+            ~ District,
+            ~ Candidate,
+            ~ Gender,
+            ~ Race,
+            ~ Age) %>% mutate(
+              across(Country, as.character),
+              across(State, as.character),
+              across(Year, as.integer),
+              across(Office, as.character),
+              across(Party, as.character),
+              across(District, as.character),
+              across(Candidate, as.character),
+              across(Gender, as.character),
+              across(Race, as.character),
+              across(Age, as.integer)
+            )
 }
 
 #------------------------------------------------------------------------
 main <- function() {
   election_results <- init_elections() |> in_load_elections2() |>
-  #------------------------------------------------------------------------
+    #------------------------------------------------------------------------
   # To speed up testing let's filter data a little
   # Comment out when we're ready for all data (including pipe above)
   filter((

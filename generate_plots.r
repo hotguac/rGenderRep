@@ -49,5 +49,7 @@ generate_plot <- function(.data, .year, .state, .office) {
       plot.title = element_text(size = 16, hjust = 0.5)
     )  +
     scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-    labs(x = "", y = "Percent", title = paste(.state, .year, .office))
+    labs(x = "",
+         y = "Percent",
+         title = paste(.state, .year, .office))
 }
