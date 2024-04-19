@@ -3,6 +3,10 @@ library(tidyverse, warn.conflicts = FALSE)
 # data source is
 # https://indianavoters.in.gov/ENRHistorical/ElectionResults?year=2022#
 
+hh_ss <- function (form = "%H:%M:%S") {
+  cat(format(Sys.time(), format = form), "\n")
+}
+
 #------------------------------------------------------------------------
 in_load_candidate_meta2 <- function(.data) {
   # primary data was exported and the gender (M/F) manually added
@@ -10,7 +14,7 @@ in_load_candidate_meta2 <- function(.data) {
   gender_levels <- c("M", "F", "O")
 
   candidate_gender <-
-    tribble(~ Country, ~ State, ~ Year, ~ Sourced)
+    tribble( ~ Country, ~ State, ~ Year, ~ Sourced)
 
   print("Loading candidate meta data...")
 
@@ -37,15 +41,15 @@ in_load_candidate_meta2 <- function(.data) {
   results$District <- gsub("District ", "", results$District)
 
   results <- results |>
-    mutate(District = if_else(District == "1", "01", District)) |>
-    mutate(District = if_else(District == "2", "02", District)) |>
-    mutate(District = if_else(District == "3", "03", District)) |>
-    mutate(District = if_else(District == "4", "04", District)) |>
-    mutate(District = if_else(District == "5", "05", District)) |>
-    mutate(District = if_else(District == "6", "06", District)) |>
-    mutate(District = if_else(District == "7", "07", District)) |>
-    mutate(District = if_else(District == "8", "08", District)) |>
-    mutate(District = if_else(District == "9", "09", District))
+    mutate(District = replace(District, District == "1", "01")) |>
+    mutate(District = replace(District, District == "2", "03")) |>
+    mutate(District = replace(District, District == "3", "03")) |>
+    mutate(District = replace(District, District == "4", "04")) |>
+    mutate(District = replace(District, District == "5", "05")) |>
+    mutate(District = replace(District, District == "6", "06")) |>
+    mutate(District = replace(District, District == "7", "07")) |>
+    mutate(District = replace(District, District == "8", "08")) |>
+    mutate(District = replace(District, District == "9", "09"))
 
   options(readr.show_col_types = save_option)
 
@@ -110,17 +114,19 @@ in_load_elections2 <- function(election_results) {
   print("Doing gsub to remove District literal...")
   results$District <- gsub("District ", "", results$District)
 
+  hh_ss()
   print("Doing mutates to add leading zero to single digit districts...")
-  results <- results |>
-    mutate(District = if_else(District == "1", "01", District)) |>
-    mutate(District = if_else(District == "2", "02", District)) |>
-    mutate(District = if_else(District == "3", "03", District)) |>
-    mutate(District = if_else(District == "4", "04", District)) |>
-    mutate(District = if_else(District == "5", "05", District)) |>
-    mutate(District = if_else(District == "6", "06", District)) |>
-    mutate(District = if_else(District == "7", "07", District)) |>
-    mutate(District = if_else(District == "8", "08", District)) |>
-    mutate(District = if_else(District == "9", "09", District))
+  results <- results |> ungroup() |>
+    mutate(District = replace(District, District == "1", "01")) |>
+    mutate(District = replace(District, District == "2", "03")) |>
+    mutate(District = replace(District, District == "3", "03")) |>
+    mutate(District = replace(District, District == "4", "04")) |>
+    mutate(District = replace(District, District == "5", "05")) |>
+    mutate(District = replace(District, District == "6", "06")) |>
+    mutate(District = replace(District, District == "7", "07")) |>
+    mutate(District = replace(District, District == "8", "08")) |>
+    mutate(District = replace(District, District == "9", "09"))
+  hh_ss()
 
   options(readr.show_col_types = save_option)
 
