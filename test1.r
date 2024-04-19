@@ -4,7 +4,8 @@
 #'
 #'
 #'
-library(tidyverse)
+library(dplyr, warn.conflicts = FALSE)
+library(tibble)
 library(ggplot2)
 
 source(file = "sources.r")
@@ -72,10 +73,13 @@ main <- function() {
   # End test filter
   #------------------------------------------------------------------------
 
-  candidate_meta <- init_meta() |> in_load_candidate_meta()
+  candidate_meta <- in_load_candidate_meta2() |> distinct()
 
+  print("Combining data and meta data...")
   all_rows <- combine_meta(election_results, candidate_meta)
   all_years <- unique(all_rows$Year)
+
+  print("Go time!")
 
   for (data_year in 1:length(all_years)) {
     target_year <- all_years[data_year]
