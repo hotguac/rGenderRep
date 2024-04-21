@@ -11,12 +11,11 @@ hh_ss <- function (form = "%H:%M:%S") {
 in_load_candidate_meta2 <- function(.data) {
   # primary data was exported and the gender (M/F) manually added
   # to the csv file
-  gender_levels <- c("M", "F", "O")
-
   candidate_gender <-
-    tribble( ~ Country, ~ State, ~ Year, ~ Sourced)
+    tribble(~ Country, ~ State, ~ Year, ~ Sourced)
 
   print("Loading candidate meta data...")
+  hh_ss()
 
   x <-
     list.files("data", pattern = "need_gender.*\\.csv", full.names = TRUE) |> set_names(basename)
@@ -24,22 +23,24 @@ in_load_candidate_meta2 <- function(.data) {
   save_option <- getOption("readr.show_col_types")
   options(readr.show_col_types = FALSE)
 
+  c_types = cols(
+    Country = col_character(),
+    State = col_character(),
+    Year = col_integer(),
+    Office = col_character(),
+    Party = col_character(),
+    District = col_character(),
+    Candidate = col_character(),
+    Gender = col_factor(c("M", "F", "O"))
+  )
+
   results <-
-    x  |> map(\(x) read_csv(x, col_types = cols(Gender = col_factor(gender_levels)))) |>
+    x  |> map(\(x) read_csv(x, col_types = c_types)) |>
     list_rbind() |>
-    filter(!is.na(Gender)) |>
-    mutate(
-      across(Country, as.character),
-      across(State, as.character),
-      across(Year, as.integer),
-      across(Office, as.character),
-      across(Party, as.character),
-      across(District, as.character),
-      across(Candidate, as.character)
-    )
+    filter(!is.na(Gender))
 
   results$District <- gsub("District ", "", results$District)
-
+  hh_ss()
   results <- results |>
     mutate(District = replace(District, District == "1", "01")) |>
     mutate(District = replace(District, District == "2", "03")) |>
@@ -51,6 +52,7 @@ in_load_candidate_meta2 <- function(.data) {
     mutate(District = replace(District, District == "8", "08")) |>
     mutate(District = replace(District, District == "9", "09"))
 
+  hh_ss()
   options(readr.show_col_types = save_option)
 
   results
@@ -75,6 +77,7 @@ in_load_elections2 <- function(election_results) {
     temp2 <- temp[[1]][3]
     temp <- strsplit(temp2, "\\.")
     temp2 <- temp[[1]][1]
+    as.integer(temp2)
   }
 
   x <-
@@ -84,38 +87,46 @@ in_load_elections2 <- function(election_results) {
   options(readr.show_col_types = FALSE)
 
   print("Loading election results...")
+  hh_ss()
+
+  c_types = cols(
+    County = col_character(),
+    Office = col_character(),
+    Party = col_character(),
+    District = col_character(),
+    Candidate = col_character(),
+    Votes = col_integer()
+  )
 
   results <-
-    x |> map(\(x) read_csv(x))
+    x |> map(\(x) read_csv(x, col_types = c_types))
 
   print("Doing list_rbind")
+  hh_ss()
 
   results <- results |>
     list_rbind(names_to = "filename")
 
   print("Doing mutate for Election, State, and Year")
+  hh_ss()
 
   results <- results %>%
     rowwise() %>%
     mutate(Election = mapply(extract_election, filename)) %>%
     mutate(State = mapply(extract_state, filename)) %>%
-    mutate(Year = mapply(extract_year, filename)) %>%
-    mutate(Country = "USA") %>% mutate(
-      across(Country, as.character),
-      across(State, as.character),
-      across(Year, as.integer),
-      across(Office, as.character),
-      across(Party, as.character),
-      across(District, as.character),
-      across(Candidate, as.character),
-      across(Votes, as.double)
-    )
+    mutate(Year = mapply(extract_year, filename))
+
+  print("Setting country name")
+  hh_ss()
+
+  results$Country <- "USA"
 
   print("Doing gsub to remove District literal...")
+  hh_ss()
   results$District <- gsub("District ", "", results$District)
 
-  hh_ss()
   print("Doing mutates to add leading zero to single digit districts...")
+  hh_ss()
   results <- results |> ungroup() |>
     mutate(District = replace(District, District == "1", "01")) |>
     mutate(District = replace(District, District == "2", "03")) |>

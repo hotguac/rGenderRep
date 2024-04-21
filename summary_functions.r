@@ -13,7 +13,6 @@ combine_meta <-
 
     y
   }
-
 #-----------------------------------------------------------------------
 get_gender_count <-
   function(.data, .gender) {
@@ -25,7 +24,6 @@ get_gender_count <-
     }
     result
   }
-
 #-----------------------------------------------------------------------
 get_missing_gender <- function(.data,
                                .election = "ALL",
@@ -39,9 +37,8 @@ get_missing_gender <- function(.data,
     Office,
     Party,
     District
-  ))
+  )) |> distinct()
 }
-
 #-----------------------------------------------------------------------
 add_gender_rows <- function(.data, .cat, .m, .f, .o, .u) {
   .data |> add_row(Category = .cat,
