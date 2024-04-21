@@ -58,7 +58,6 @@ in_load_candidate_meta2 <- function(.data) {
   results
 }
 
-
 #------------------------------------------------------------------------
 #------------------------------------------------------------------------
 in_load_elections2 <- function(election_results) {
@@ -99,22 +98,15 @@ in_load_elections2 <- function(election_results) {
   )
 
   results <-
-    x |> map(\(x) read_csv(x, col_types = c_types))
-
-  print("Doing list_rbind")
-  hh_ss()
-
-  results <- results |>
+    x |> map(\(x) read_csv(x, col_types = c_types)) |>
     list_rbind(names_to = "filename")
 
   print("Doing mutate for Election, State, and Year")
   hh_ss()
 
-  results <- results %>%
-    rowwise() %>%
-    mutate(Election = mapply(extract_election, filename)) %>%
-    mutate(State = mapply(extract_state, filename)) %>%
-    mutate(Year = mapply(extract_year, filename))
+  results <- results |> separate_wider_delim(filename, delim = "_", names = c("State", "Election", "TheRest"))
+  results <- results |> separate_wider_delim(TheRest, delim = ".", names = c("Year", "ext")) |> mutate(Year = parse_integer(Year))
+  results$ext <- NULL
 
   print("Setting country name")
   hh_ss()
@@ -140,9 +132,6 @@ in_load_elections2 <- function(election_results) {
   hh_ss()
 
   options(readr.show_col_types = save_option)
-
-  print("Removing filename...")
-  results$filename <- NULL
 
   print("Binding to existing results...")
   bind_rows(election_results, results)
