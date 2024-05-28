@@ -1,8 +1,3 @@
-library(tidyverse, warn.conflicts = FALSE)
-library(ggplot2)
-library(svglite)
-
-
 #-------------------------------------------------------------------------
 # Generate a stacked bar chart showing percentage of candidates by gender
 # for the primary, general, and elected to office
@@ -45,7 +40,7 @@ generate_plot <- function(.data, .year, .state, .office) {
               position = position_stack(vjust = .5)) +
     scale_fill_brewer(palette = "Pastel2") +
     theme(
-      plot.background = element_rect(fill = 'transparent', colour = NA),
+      #plot.background = element_rect(fill = 'transparent', colour = NA),
       plot.title = element_text(size = 16, hjust = 0.5)
     )  +
     scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +

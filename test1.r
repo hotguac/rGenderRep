@@ -60,15 +60,15 @@ init_meta <- function() {
 #------------------------------------------------------------------------
 main <- function() {
   election_results <- init_elections() |> in_load_elections2() |>
-    #------------------------------------------------------------------------
-  # To speed up testing let's filter data a little
+  #------------------------------------------------------------------------
+  # To speed up testing let's filter data a little |>
   # Comment out when we're ready for all data (including pipe above)
   filter((
-    Office == "US Senator" |
-      Office == "US Representative" |
-      Office == "State Senator" | Office == "State Representative"
-  )
-  ) |> filter(Year >= 2016)
+     Office == "US Senator" |
+       Office == "US Representative" |
+       Office == "State Senator" | Office == "State Representative"
+   )
+   ) |> filter(Year >= 2016)
   #
   # End test filter
   #------------------------------------------------------------------------
@@ -77,6 +77,13 @@ main <- function() {
 
   print("Combining data and meta data...")
   all_rows <- combine_meta(election_results, candidate_meta)
+
+  # test
+  all_rows <- propagate_meta(all_rows,candidate_meta)
+  # test
+
+
+
   all_years <- unique(all_rows$Year)
 
   print("Go time!")

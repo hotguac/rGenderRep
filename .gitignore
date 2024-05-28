@@ -7,3 +7,5 @@ plots/*
 output/*
 foo.ps
 r
+notes.txt
+combined_meta.csv
